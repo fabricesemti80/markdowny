@@ -137,7 +137,16 @@ def _convert_pdf_with_xhtml2pdf(content, output_file, resource_paths, resource_p
         format='markdown',
         extra_args=[f'--resource-path={resource_path_arg}']
     )
-    html = f"<html><head><meta charset='utf-8'></head><body>{html}</body></html>"
+    css = (
+        "<style>"
+        "body { font-family: Helvetica, Arial, sans-serif; font-size: 10px; }"
+        "table { border-collapse: collapse; max-width: 100%; margin: 8px 0; }"
+        "th, td { border: 1px solid #999; padding: 3px 5px; text-align: left;"
+        " overflow: hidden; word-wrap: break-word; }"
+        "th { background-color: #e9ecef; font-weight: bold; }"
+        "</style>"
+    )
+    html = f"<html><head><meta charset='utf-8'>{css}</head><body>{html}</body></html>"
     callback = _make_xhtml2pdf_link_callback(resource_paths)
     with open(output_file, 'wb') as f:
         result = pisa.CreatePDF(src=html, dest=f, encoding='utf-8', link_callback=callback)
