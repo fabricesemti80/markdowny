@@ -438,6 +438,7 @@ name = "md-converter"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
+    { name = "pillow" },
     { name = "pypandoc" },
     { name = "requests" },
 ]
@@ -449,6 +450,7 @@ pdf-fallback = [
 
 [package.metadata]
 requires-dist = [
+    { name = "pillow" },
     { name = "pypandoc" },
     { name = "requests" },
     { name = "xhtml2pdf", marker = "extra == 'pdf-fallback'" },

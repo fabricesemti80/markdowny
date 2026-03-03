@@ -11,7 +11,10 @@ from urllib.parse import unquote, urlparse
 import requests  # Helps us make web requests (for Mermaid rendering)
 import urllib3   # Used to suppress SSL warnings in corporate environments
 import pypandoc  # The main tool that converts files (like a translator)
-from PIL import Image
+try:
+    from PIL import Image
+except Exception:
+    Image = None
 try:
     from xhtml2pdf import pisa  # Optional PDF fallback
 except Exception:
@@ -275,6 +278,9 @@ def render_mermaid_blocks(content, temp_dir):
         Word cannot split a single oversized image across pages reliably.
         If Mermaid output is very tall, split into stacked PNG chunks.
         """
+        if Image is None:
+            log_warn("Pillow is not installed; skipping Mermaid image splitting for long diagrams.")
+            return [source_path]
         with Image.open(source_path) as img:
             width, height = img.size
             if height <= max_chunk_height:

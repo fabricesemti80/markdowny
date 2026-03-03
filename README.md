@@ -11,6 +11,7 @@
 - `uv`
 - Pandoc available in `PATH`
 - Recommended for better PDF table rendering: `wkhtmltopdf` available in `PATH`
+- Optional for better long Mermaid handling in DOCX: `pillow`
 
 ## Install
 
