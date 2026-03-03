@@ -10,6 +10,7 @@
 
 - `uv`
 - Pandoc available in `PATH`
+- Recommended for better PDF table rendering: `wkhtmltopdf` available in `PATH`
 
 ## Install
 
