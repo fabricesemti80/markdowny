@@ -370,18 +370,31 @@ def choose_output_format(default_format='docx'):
     return selected
 
 
-if __name__ == "__main__":
+def main():
     parser = argparse.ArgumentParser(description="Convert between Markdown, DOCX, and PDF (auto-detects direction).")
     parser.add_argument("input_file", nargs="?", help="Path to the input file (.md or .docx).")
     parser.add_argument("output_file", nargs="?", help="Path to the output file.")
     parser.add_argument("-f", "--format", choices=["docx", "pdf"], default=None,
                         help="Output format when converting from Markdown. If omitted, you will be prompted (default: docx).")
+    parser.add_argument("--pdf", action="store_true",
+                        help="Shortcut for '--format pdf' when converting from Markdown.")
+    parser.add_argument("--docx", action="store_true",
+                        help="Shortcut for '--format docx' when converting from Markdown.")
 
     args = parser.parse_args()
 
     input_file = args.input_file
     output_file = args.output_file
     output_format = args.format
+
+    if args.pdf and args.docx:
+        parser.error("Use only one of '--pdf' or '--docx'.")
+    if output_format and (args.pdf or args.docx):
+        parser.error("Use either '--format' or '--pdf/--docx', not both.")
+    if args.pdf:
+        output_format = 'pdf'
+    elif args.docx:
+        output_format = 'docx'
 
     # Interactive mode: ask for input file if not provided
     if not input_file:
@@ -413,21 +426,18 @@ if __name__ == "__main__":
         direction_label = f"Markdown -> {output_format.upper()}"
     log_step(f"Detected conversion: {direction_label}")
 
-    # Ask for output file if not provided
+    # Use inferred output path by default to keep CLI usage non-interactive.
     if not output_file:
-        try:
-            output_file = input(f"Enter output file path (default: {default_output}): ").strip()
-            output_file = output_file.strip('"').strip("'")
-        except KeyboardInterrupt:
-            print()
-            log_warn("Operation cancelled.")
-            sys.exit(0)
-
-        if not output_file:
-            output_file = default_output
+        output_file = default_output
+        log_info(f"No output path provided; using '{output_file}'.")
 
     # Run the appropriate conversion
     if direction == 'docx2md':
         convert_docx_to_md(input_file, output_file)
     else:
         convert_md_to_output(input_file, output_file, output_format)
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

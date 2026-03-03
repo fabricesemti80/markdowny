@@ -18,7 +18,7 @@ The script auto-detects the direction from the input file extension.
 
 ### Optional tools
 
-- GNU Make (if you want to use the `Makefile` targets)
+- GNU Make (if you want to use the `Makefile` convenience targets)
 - WeasyPrint runtime libraries (optional): if unavailable, PDF generation automatically falls back to `xhtml2pdf`
 
 ### Python dependencies
@@ -56,8 +56,7 @@ The script auto-detects the direction from the input file extension.
 make init
 ```
 
-This creates `.venv` and installs/syncs dependencies using `uv sync`.
-If `uv sync` is blocked by your network/proxy, `make init` falls back to `pip` in the same `.venv`.
+This syncs dependencies using `uv sync`.
 
 ### 2. Convert files
 
@@ -102,18 +101,52 @@ make clean
    `uv sync --native-tls`
 2. Run the script:
    - With arguments:
-     `uv run --no-sync python convert.py input_file [output_file] -f [docx|pdf]`
+     `uv run --no-sync mdy input_file [output_file] -f [docx|pdf]`
    - Interactive mode:
-     `uv run --no-sync python convert.py`
-   - Omit `-f` with Markdown input to choose format interactively (default: `docx`).
+     `uv run --no-sync mdy`
+   - Shortcut flags:
+     `--pdf` (same as `-f pdf`) and `--docx` (same as `-f docx`)
+   - If `output_file` is omitted, a default path is used automatically.
 
 Examples:
 
 ```bash
-uv run --no-sync python convert.py test.md
-uv run --no-sync python convert.py test.md test.docx
-uv run --no-sync python convert.py test.md test.pdf -f pdf
-uv run --no-sync python convert.py test.md test.out      # prompts for docx/pdf, defaults to docx
-uv run --no-sync python convert.py document.docx
-uv run --no-sync python convert.py document.docx document.md
+uv run --no-sync mdy test.md
+uv run --no-sync mdy test.md test.docx
+uv run --no-sync mdy test.md --pdf
+uv run --no-sync mdy test.md test.pdf --pdf
+uv run --no-sync mdy document.docx
+uv run --no-sync mdy document.docx document.md
+```
+
+Install as a global command:
+
+```bash
+uv tool install --native-tls .
+mdy --help
+mdy /path/to/file.md --pdf
+```
+
+If `mdy` is not found after install, your tools bin directory is not on `PATH`.
+
+PowerShell (current session):
+
+```powershell
+$env:PATH = "C:\Users\<your-user>\.local\bin;$env:PATH"
+mdy --help
+```
+
+Permanent shell setup:
+
+```powershell
+uv tool update-shell
+```
+
+Then restart your terminal.
+
+No-PATH fallback:
+
+```bash
+uv tool run mdy --help
+uv tool run mdy /path/to/file.md --pdf
 ```

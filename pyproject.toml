@@ -1,3 +1,7 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "md-converter"
 version = "0.1.0"
@@ -9,3 +13,9 @@ dependencies = [
     "requests",
     "xhtml2pdf",
 ]
+
+[project.scripts]
+mdy = "convert:main"
+
+[tool.setuptools]
+py-modules = ["convert"]
