@@ -1,130 +1,22 @@
-# Markdown, DOCX, and PDF Converter
+# Markdowny CLI
 
-This project provides a Python script to convert:
+`mdy` converts:
 
 - Markdown -> DOCX
 - Markdown -> PDF
 - DOCX -> Markdown
 
-The script auto-detects the direction from the input file extension.
-
 ## Requirements
 
-### Required tools
+- `uv`
+- Pandoc available in `PATH`
 
-- Python 3.10+ (tested with Python 3.13)
-- Pandoc (must be installed and available in `PATH`)
-- `uv` (required for `uv sync`, `uv run`, and `make init`)
+## Install
 
-### Optional tools
-
-- GNU Make (if you want to use the `Makefile` convenience targets)
-- WeasyPrint runtime libraries (optional): if unavailable, PDF generation automatically falls back to `xhtml2pdf`
-
-### Python dependencies
-
-- Declared in `pyproject.toml` and locked in `uv.lock`:
-  - `pypandoc`
-  - `requests`
-  - `xhtml2pdf`
-
-### Network requirement
-
-- Mermaid diagrams are rendered through `https://mermaid.ink`; internet access is required when converting Markdown files containing Mermaid blocks.
-
-## What the script does
-
-- Auto-detects conversion direction:
-  - `.md` -> `.docx` or `.pdf`
-  - `.docx` -> `.md`
-- Supports command-line and interactive modes.
-- If format is not provided for Markdown input, prompts for output format (`docx` default, `pdf` optional).
-- Markdown -> DOCX:
-  - Strips YAML front matter before conversion.
-  - Replaces standalone `---` lines with `***` to avoid YAML misinterpretation.
-  - Resolves image resources from both the input file directory and current working directory.
-  - Renders fenced Mermaid blocks (```mermaid ... ```) to PNG images via `https://mermaid.ink`.
-- DOCX -> Markdown:
-  - Extracts embedded media into a `media` folder next to the output Markdown file.
-  - Uses unwrapped lines (`--wrap=none`).
-
-## Using Make
-
-### 1. Initialize environment
-
-```bash
-make init
-```
-
-This syncs dependencies using `uv sync`.
-
-### 2. Convert files
-
-Markdown -> DOCX:
-
-```bash
-make convert INPUT=doc.md
-make convert INPUT=doc.md OUTPUT=out.docx
-```
-
-Markdown -> PDF:
-
-```bash
-make convert INPUT=doc.md FORMAT=pdf
-```
-
-Prompt for format (defaults to DOCX):
-
-```bash
-make convert INPUT=doc.md
-```
-
-DOCX -> Markdown:
-
-```bash
-make convert INPUT=doc.docx
-make convert INPUT=doc.docx OUTPUT=out.md
-```
-
-If `OUTPUT` is omitted, the script uses a default based on input filename.
-If `FORMAT` is omitted for Markdown input, the script prompts for `docx`/`pdf` (default: `docx`).
-
-### 3. Clean up
-
-```bash
-make clean
-```
-
-## Manual usage (without Make)
-
-1. Sync project environment from lockfile:
-   `uv sync --native-tls`
-2. Run the script:
-   - With arguments:
-     `uv run --no-sync mdy input_file [output_file] -f [docx|pdf]`
-   - Interactive mode:
-     `uv run --no-sync mdy`
-   - Shortcut flags:
-     `--pdf` (same as `-f pdf`) and `--docx` (same as `-f docx`)
-   - If `output_file` is omitted, a default path is used automatically.
-
-Examples:
-
-```bash
-uv run --no-sync mdy test.md
-uv run --no-sync mdy test.md test.docx
-uv run --no-sync mdy test.md --pdf
-uv run --no-sync mdy test.md test.pdf --pdf
-uv run --no-sync mdy document.docx
-uv run --no-sync mdy document.docx document.md
-```
-
-Install as a global command:
+From this repository root:
 
 ```bash
 uv tool install --native-tls .
-mdy --help
-mdy /path/to/file.md --pdf
 ```
 
 If `mdy` is not found after install, your tools bin directory is not on `PATH`.
@@ -148,5 +40,42 @@ No-PATH fallback:
 
 ```bash
 uv tool run mdy --help
-uv tool run mdy /path/to/file.md --pdf
 ```
+
+## Usage
+
+Show help:
+
+```bash
+mdy --help
+```
+
+Markdown -> PDF:
+
+```bash
+mdy path/to/file.md --pdf
+```
+
+Markdown -> DOCX:
+
+```bash
+mdy path/to/file.md --docx
+```
+
+DOCX -> Markdown:
+
+```bash
+mdy path/to/file.docx
+```
+
+Optional output path:
+
+```bash
+mdy path/to/file.md out.pdf --pdf
+```
+
+If output path is omitted, `mdy` auto-generates one based on the input filename.
+
+## Developer Notes
+
+Development workflows (`make`, `uv sync`, `uv run`, local testing) are in `DEVNOTES.md`.
