@@ -12,6 +12,7 @@ import requests  # Helps us make web requests (for Mermaid rendering)
 import urllib3   # Used to suppress SSL warnings in corporate environments
 import pypandoc  # The main tool that converts files (like a translator)
 from xhtml2pdf import pisa  # Pure-Python HTML -> PDF fallback for Windows
+from PIL import Image
 
 # Suppress SSL warnings when verify=False (common in corporate proxy environments)
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -164,6 +165,7 @@ def _convert_pdf_with_wkhtmltopdf(content, output_file, resource_path_arg):
         "table { border-collapse: collapse; width: 100%; table-layout: fixed; }"
         "th, td { border: 1px solid #999; padding: 4px 6px; vertical-align: top;"
         " white-space: normal; word-wrap: break-word; overflow-wrap: anywhere; }"
+        "img { max-width: 100%; height: auto; page-break-inside: avoid; }"
         "code { white-space: normal; word-break: break-word; overflow-wrap: anywhere; }"
         "th { background-color: #e9ecef; font-weight: bold; }"
         "</style>"
@@ -210,6 +212,7 @@ def _convert_pdf_with_xhtml2pdf(content, output_file, resource_paths, resource_p
         "th, td { border: 1px solid #999; padding: 3px 5px; text-align: left;"
         " vertical-align: top; white-space: normal; overflow: hidden;"
         " word-wrap: break-word; overflow-wrap: anywhere; word-break: break-word; }"
+        "img { max-width: 100%; height: auto; }"
         "code { white-space: normal; overflow-wrap: anywhere; word-break: break-word; }"
         "tr { page-break-inside: avoid; }"
         "th { background-color: #e9ecef; font-weight: bold; }"
@@ -260,6 +263,29 @@ def render_mermaid_blocks(content, temp_dir):
 
     log_step(f"Found {len(matches)} Mermaid diagram(s), rendering to images...")
 
+    def split_tall_image_if_needed(source_path, base_name, max_chunk_height=1400):
+        """
+        Word cannot split a single oversized image across pages reliably.
+        If Mermaid output is very tall, split into stacked PNG chunks.
+        """
+        with Image.open(source_path) as img:
+            width, height = img.size
+            if height <= max_chunk_height:
+                return [source_path]
+
+            chunk_paths = []
+            top = 0
+            part = 1
+            while top < height:
+                bottom = min(top + max_chunk_height, height)
+                chunk = img.crop((0, top, width, bottom))
+                chunk_path = os.path.join(diagrams_dir, f'{base_name}_part{part}.png')
+                chunk.save(chunk_path)
+                chunk_paths.append(chunk_path)
+                top = bottom
+                part += 1
+            return chunk_paths
+
     for i, match in enumerate(reversed(matches), 1):
         diagram_code = match.group(1).strip()
         diagram_num = len(matches) - i + 1
@@ -276,9 +302,15 @@ def render_mermaid_blocks(content, temp_dir):
             with open(image_path, 'wb') as f:
                 f.write(response.content)
 
-            # Replace the code block with an image reference (use forward slashes for Pandoc)
-            pandoc_path = image_path.replace('\\', '/')
-            replacement = f'![Diagram {diagram_num}]({pandoc_path})'
+            chunk_paths = split_tall_image_if_needed(image_path, f'mermaid_{diagram_num}')
+            refs = []
+            for idx, chunk_path in enumerate(chunk_paths, 1):
+                pandoc_path = chunk_path.replace('\\', '/')
+                if len(chunk_paths) == 1:
+                    refs.append(f'![Diagram {diagram_num}]({pandoc_path}){{ width=95% }}')
+                else:
+                    refs.append(f'![Diagram {diagram_num} ({idx}/{len(chunk_paths)})]({pandoc_path}){{ width=95% }}')
+            replacement = '\n\n'.join(refs)
             content = content[:match.start()] + replacement + content[match.end():]
             log_info(f"Rendered diagram {diagram_num} -> {image_path}")
 
