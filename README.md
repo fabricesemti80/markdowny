@@ -20,6 +20,12 @@ From this repository root:
 uv tool install --native-tls .
 ```
 
+Optional (only if you explicitly want the `xhtml2pdf` fallback too):
+
+```bash
+uv tool install --native-tls ".[pdf-fallback]"
+```
+
 If `mdy` is not found after install, your tools bin directory is not on `PATH`.
 
 PowerShell (current session):

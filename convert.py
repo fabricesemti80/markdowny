@@ -11,8 +11,11 @@ from urllib.parse import unquote, urlparse
 import requests  # Helps us make web requests (for Mermaid rendering)
 import urllib3   # Used to suppress SSL warnings in corporate environments
 import pypandoc  # The main tool that converts files (like a translator)
-from xhtml2pdf import pisa  # Pure-Python HTML -> PDF fallback for Windows
 from PIL import Image
+try:
+    from xhtml2pdf import pisa  # Optional PDF fallback
+except Exception:
+    pisa = None
 
 # Suppress SSL warnings when verify=False (common in corporate proxy environments)
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -198,6 +201,10 @@ def _convert_pdf_with_xhtml2pdf(content, output_file, resource_paths, resource_p
     Fallback PDF generation:
     Markdown -> HTML (Pandoc), then HTML -> PDF (xhtml2pdf).
     """
+    if pisa is None:
+        raise RuntimeError(
+            "xhtml2pdf fallback is not installed. Install with: uv tool install --native-tls '.[pdf-fallback]'"
+        )
     safe_content = _normalize_markdown_tables_for_xhtml2pdf(content)
     html = pypandoc.convert_text(
         safe_content,

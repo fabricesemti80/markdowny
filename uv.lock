@@ -440,6 +440,10 @@ source = { editable = "." }
 dependencies = [
     { name = "pypandoc" },
     { name = "requests" },
+]
+
+[package.optional-dependencies]
+pdf-fallback = [
     { name = "xhtml2pdf" },
 ]
 
@@ -447,8 +451,9 @@ dependencies = [
 requires-dist = [
     { name = "pypandoc" },
     { name = "requests" },
-    { name = "xhtml2pdf" },
+    { name = "xhtml2pdf", marker = "extra == 'pdf-fallback'" },
 ]
+provides-extras = ["pdf-fallback"]
 
 [[package]]
 name = "oscrypto"
