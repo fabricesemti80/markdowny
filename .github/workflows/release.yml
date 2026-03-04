@@ -56,15 +56,29 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: actions/download-artifact@v4
         with:
           name: dist
           path: dist/
 
+      - name: Get latest tag
+        id: tag
+        run: |
+          git fetch --tags
+          TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          if [ -z "$TAG" ]; then
+            echo "No tags found. Push a tag (e.g., v0.1.0) to trigger release."
+            exit 1
+          fi
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ steps.tag.outputs.tag }}
           files: dist/*
           generate_release_notes: true
         env:
