@@ -11,6 +11,12 @@ requires-python = ">=3.10"
 dependencies = [
     "pypandoc",
     "requests",
+    "pillow",
+    "xhtml2pdf",
+]
+
+[project.optional-dependencies]
+pdf-fallback = [
     "xhtml2pdf",
 ]
 

@@ -438,17 +438,24 @@ name = "md-converter"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
+    { name = "pillow" },
     { name = "pypandoc" },
     { name = "requests" },
+]
+
+[package.optional-dependencies]
+pdf-fallback = [
     { name = "xhtml2pdf" },
 ]
 
 [package.metadata]
 requires-dist = [
+    { name = "pillow" },
     { name = "pypandoc" },
     { name = "requests" },
-    { name = "xhtml2pdf" },
+    { name = "xhtml2pdf", marker = "extra == 'pdf-fallback'" },
 ]
+provides-extras = ["pdf-fallback"]
 
 [[package]]
 name = "oscrypto"

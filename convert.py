@@ -11,7 +11,14 @@ from urllib.parse import unquote, urlparse
 import requests  # Helps us make web requests (for Mermaid rendering)
 import urllib3   # Used to suppress SSL warnings in corporate environments
 import pypandoc  # The main tool that converts files (like a translator)
-from xhtml2pdf import pisa  # Pure-Python HTML -> PDF fallback for Windows
+try:
+    from PIL import Image
+except Exception:
+    Image = None
+try:
+    from xhtml2pdf import pisa  # Optional PDF fallback
+except Exception:
+    pisa = None
 
 # Suppress SSL warnings when verify=False (common in corporate proxy environments)
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -126,10 +133,31 @@ def _can_use_weasyprint(weasyprint_exe):
         return False
 
 
-def _convert_pdf_with_xhtml2pdf(content, output_file, resource_paths, resource_path_arg):
+def _can_use_wkhtmltopdf():
+    """Returns True if wkhtmltopdf is available in PATH."""
+    return shutil.which('wkhtmltopdf') is not None
+
+
+def _normalize_markdown_tables_for_xhtml2pdf(md_text):
+    """
+    xhtml2pdf handles inline code in Markdown tables poorly.
+    Strip backticks in table rows so content can wrap inside cells.
+    """
+    normalized_lines = []
+    for line in md_text.splitlines():
+        stripped = line.strip()
+        is_table_row = stripped.startswith('|') and stripped.endswith('|')
+        is_table_sep = bool(re.match(r'^\|[\s:\-|\t]+\|$', stripped))
+        if is_table_row and not is_table_sep:
+            line = re.sub(r'`([^`]+)`', r'\1', line)
+        normalized_lines.append(line)
+    return '\n'.join(normalized_lines)
+
+
+def _convert_pdf_with_wkhtmltopdf(content, output_file, resource_path_arg):
     """
     Fallback PDF generation:
-    Markdown -> HTML (Pandoc), then HTML -> PDF (xhtml2pdf).
+    Markdown -> HTML (Pandoc), then HTML -> PDF (wkhtmltopdf).
     """
     html = pypandoc.convert_text(
         content,
@@ -139,10 +167,64 @@ def _convert_pdf_with_xhtml2pdf(content, output_file, resource_paths, resource_p
     )
     css = (
         "<style>"
+        "body { font-family: Arial, Helvetica, sans-serif; font-size: 11px; }"
+        "table { border-collapse: collapse; width: 100%; table-layout: fixed; }"
+        "th, td { border: 1px solid #999; padding: 4px 6px; vertical-align: top;"
+        " white-space: normal; word-wrap: break-word; overflow-wrap: anywhere; }"
+        "img { max-width: 100%; height: auto; page-break-inside: avoid; }"
+        "code { white-space: normal; word-break: break-word; overflow-wrap: anywhere; }"
+        "th { background-color: #e9ecef; font-weight: bold; }"
+        "</style>"
+    )
+    html = f"<html><head><meta charset='utf-8'>{css}</head><body>{html}</body></html>"
+    with tempfile.NamedTemporaryFile('w', suffix='.html', delete=False, encoding='utf-8') as tmp_html:
+        tmp_html.write(html)
+        tmp_html_path = tmp_html.name
+
+    try:
+        result = subprocess.run(
+            ['wkhtmltopdf', '--enable-local-file-access', tmp_html_path, output_file],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            timeout=90
+        )
+        if result.returncode != 0:
+            details = (result.stderr or result.stdout or '').strip()
+            raise RuntimeError(details or "wkhtmltopdf failed")
+    finally:
+        try:
+            os.remove(tmp_html_path)
+        except OSError:
+            pass
+
+
+def _convert_pdf_with_xhtml2pdf(content, output_file, resource_paths, resource_path_arg):
+    """
+    Fallback PDF generation:
+    Markdown -> HTML (Pandoc), then HTML -> PDF (xhtml2pdf).
+    """
+    if pisa is None:
+        raise RuntimeError(
+            "xhtml2pdf fallback is not installed. Install with: uv tool install --native-tls '.[pdf-fallback]'"
+        )
+    safe_content = _normalize_markdown_tables_for_xhtml2pdf(content)
+    html = pypandoc.convert_text(
+        safe_content,
+        'html',
+        format='markdown',
+        extra_args=[f'--resource-path={resource_path_arg}']
+    )
+    css = (
+        "<style>"
         "body { font-family: Helvetica, Arial, sans-serif; font-size: 10px; }"
-        "table { border-collapse: collapse; max-width: 100%; margin: 8px 0; }"
+        "table { border-collapse: collapse; width: 100%; table-layout: fixed; margin: 8px 0; }"
         "th, td { border: 1px solid #999; padding: 3px 5px; text-align: left;"
-        " overflow: hidden; word-wrap: break-word; }"
+        " vertical-align: top; white-space: normal; overflow: hidden;"
+        " word-wrap: break-word; overflow-wrap: anywhere; word-break: break-word; }"
+        "img { max-width: 100%; height: auto; }"
+        "code { white-space: normal; overflow-wrap: anywhere; word-break: break-word; }"
+        "tr { page-break-inside: avoid; }"
         "th { background-color: #e9ecef; font-weight: bold; }"
         "</style>"
     )
@@ -191,6 +273,32 @@ def render_mermaid_blocks(content, temp_dir):
 
     log_step(f"Found {len(matches)} Mermaid diagram(s), rendering to images...")
 
+    def split_tall_image_if_needed(source_path, base_name, max_chunk_height=1400):
+        """
+        Word cannot split a single oversized image across pages reliably.
+        If Mermaid output is very tall, split into stacked PNG chunks.
+        """
+        if Image is None:
+            log_warn("Pillow is not installed; skipping Mermaid image splitting for long diagrams.")
+            return [source_path]
+        with Image.open(source_path) as img:
+            width, height = img.size
+            if height <= max_chunk_height:
+                return [source_path]
+
+            chunk_paths = []
+            top = 0
+            part = 1
+            while top < height:
+                bottom = min(top + max_chunk_height, height)
+                chunk = img.crop((0, top, width, bottom))
+                chunk_path = os.path.join(diagrams_dir, f'{base_name}_part{part}.png')
+                chunk.save(chunk_path)
+                chunk_paths.append(chunk_path)
+                top = bottom
+                part += 1
+            return chunk_paths
+
     for i, match in enumerate(reversed(matches), 1):
         diagram_code = match.group(1).strip()
         diagram_num = len(matches) - i + 1
@@ -207,9 +315,15 @@ def render_mermaid_blocks(content, temp_dir):
             with open(image_path, 'wb') as f:
                 f.write(response.content)
 
-            # Replace the code block with an image reference (use forward slashes for Pandoc)
-            pandoc_path = image_path.replace('\\', '/')
-            replacement = f'![Diagram {diagram_num}]({pandoc_path})'
+            chunk_paths = split_tall_image_if_needed(image_path, f'mermaid_{diagram_num}')
+            refs = []
+            for idx, chunk_path in enumerate(chunk_paths, 1):
+                pandoc_path = chunk_path.replace('\\', '/')
+                if len(chunk_paths) == 1:
+                    refs.append(f'![Diagram {diagram_num}]({pandoc_path}){{ width=95% }}')
+                else:
+                    refs.append(f'![Diagram {diagram_num} ({idx}/{len(chunk_paths)})]({pandoc_path}){{ width=95% }}')
+            replacement = '\n\n'.join(refs)
             content = content[:match.start()] + replacement + content[match.end():]
             log_info(f"Rendered diagram {diagram_num} -> {image_path}")
 
@@ -220,11 +334,46 @@ def render_mermaid_blocks(content, temp_dir):
     return content
 
 
+def _ensure_pandoc_available():
+    """Ensure that a pandoc binary is accessible.
+
+    pypandoc normally requires an external pandoc installation. When the
+    converter runs inside a fresh environment (such as via ``uv tool install``)
+    the binary may not yet be present. If pandoc cannot be found we trigger
+    ``pypandoc.download_pandoc()`` which grabs a self-contained copy into
+    ``~/.pypandoc`` and updates the internal path so subsequent calls work.
+
+    This makes ``uv tool install`` effectively boot‑strap pandoc for the user
+    without requiring a separate system package. The feature is opt‑out when a
+    real pandoc already exists in ``PATH`` (preferred for production workloads).
+    """
+    try:
+        # ``get_pandoc_version`` will raise ``OSError`` if no binary is found.
+        pypandoc.get_pandoc_version()
+    except OSError as exc:
+        log_warn("Pandoc not found in PATH; attempting to download via pypandoc...")
+        try:
+            pypandoc.download_pandoc()
+            # After downloading, pypandoc will update its internal path; verify.
+            version = pypandoc.get_pandoc_version()
+            log_info(f"Successfully downloaded pandoc {version}.")
+        except Exception as dl_err:
+            log_error(
+                "Automatic pandoc download failed. "
+                "Please install pandoc manually and ensure it is on your PATH."
+            )
+            # re‑raise to keep original behaviour (exit with failure)
+            raise
+
+
 def convert_md_to_output(input_file, output_file, output_format):
     """
     Converts a Markdown file to DOCX or PDF using pypandoc.
     output_format should be 'docx' or 'pdf'.
     """
+    # make sure pandoc exists or download a bundled copy; see _ensure_pandoc_available
+    _ensure_pandoc_available()
+
     if not os.path.exists(input_file):
         log_error(f"Input file '{input_file}' not found.")
         sys.exit(1)
@@ -238,8 +387,10 @@ def convert_md_to_output(input_file, output_file, output_format):
         resource_path_arg = os.pathsep.join([input_dir, cwd])
         extra_args = [f'--resource-path={resource_path_arg}']
 
-        # For PDF, try Pandoc + WeasyPrint first, then fall back to xhtml2pdf.
+        # For PDF, prefer WeasyPrint, then wkhtmltopdf, then Pandoc default, then xhtml2pdf.
         use_weasyprint = False
+        use_wkhtmltopdf = False
+        use_pandoc_default_pdf = False
         if output_format == 'pdf':
             venv_dir = os.path.dirname(os.path.abspath(sys.executable))
             weasyprint_exe = os.path.join(venv_dir, 'weasyprint.exe')
@@ -249,8 +400,12 @@ def convert_md_to_output(input_file, output_file, output_format):
                 extra_args.append(f'--pdf-engine={weasyprint_exe}')
                 use_weasyprint = True
                 log_info("PDF engine: WeasyPrint")
+            elif _can_use_wkhtmltopdf():
+                use_wkhtmltopdf = True
+                log_info("PDF engine: wkhtmltopdf fallback (WeasyPrint runtime unavailable)")
             else:
-                log_info("PDF engine: xhtml2pdf fallback (WeasyPrint runtime unavailable)")
+                use_pandoc_default_pdf = True
+                log_info("PDF engine: Pandoc default fallback (WeasyPrint runtime unavailable)")
             extra_args.append('--metadata=title= ')
 
         # Read the file and replace standalone --- lines (horizontal rules)
@@ -276,10 +431,26 @@ def convert_md_to_output(input_file, output_file, output_format):
                         pypandoc.convert_text(content, output_format, format='markdown', outputfile=tmp_output, extra_args=extra_args)
                     except Exception as pdf_error:
                         log_warn(f"Pandoc PDF engine failed ({pdf_error}).")
-                        log_info("Falling back to xhtml2pdf (no native GTK dependencies required).")
+                        if _can_use_wkhtmltopdf():
+                            log_info("Falling back to wkhtmltopdf.")
+                            _convert_pdf_with_wkhtmltopdf(content, tmp_output, resource_path_arg)
+                        else:
+                            log_warn("Falling back to xhtml2pdf. Complex tables may render poorly.")
+                            fallback_paths = [tmp_dir, input_dir, cwd]
+                            _convert_pdf_with_xhtml2pdf(content, tmp_output, fallback_paths, resource_path_arg)
+                elif use_wkhtmltopdf:
+                    _convert_pdf_with_wkhtmltopdf(content, tmp_output, resource_path_arg)
+                elif use_pandoc_default_pdf:
+                    try:
+                        pandoc_default_args = [f'--resource-path={resource_path_arg}', '--metadata=title= ']
+                        pypandoc.convert_text(content, output_format, format='markdown', outputfile=tmp_output, extra_args=pandoc_default_args)
+                    except Exception as pdf_error:
+                        log_warn(f"Pandoc default PDF engine failed ({pdf_error}).")
+                        log_warn("Falling back to xhtml2pdf. Complex tables may render poorly.")
                         fallback_paths = [tmp_dir, input_dir, cwd]
                         _convert_pdf_with_xhtml2pdf(content, tmp_output, fallback_paths, resource_path_arg)
                 else:
+                    log_warn("Using xhtml2pdf fallback. Complex tables may render poorly.")
                     fallback_paths = [tmp_dir, input_dir, cwd]
                     _convert_pdf_with_xhtml2pdf(content, tmp_output, fallback_paths, resource_path_arg)
             shutil.copy2(tmp_output, output_file)
@@ -290,7 +461,7 @@ def convert_md_to_output(input_file, output_file, output_format):
         log_error(f"Error during conversion: {e}")
         log_error("Make sure Pandoc is installed and available in your system path.")
         if output_format == 'pdf':
-            log_info("PDF output uses WeasyPrint when available, otherwise xhtml2pdf fallback.")
+            log_info("PDF output prefers WeasyPrint/wkhtmltopdf, then falls back to xhtml2pdf.")
         sys.exit(1)
     except Exception as e:
         log_error(f"An unexpected error occurred: {e}")

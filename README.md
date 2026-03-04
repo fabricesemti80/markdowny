@@ -9,15 +9,29 @@
 ## Requirements
 
 - `uv`
-- Pandoc available in `PATH`
+- **Pandoc** – the CLI will auto‑download a copy via `pypandoc` if a system
+  binary isn't found, but for best performance and file size you can install
+  Pandoc yourself and put it on your `PATH`.
+- For PDF output: `libcairo2-dev` and `pkg-config` (Linux) or equivalent
+- Optional for better long Mermaid handling in DOCX: `pillow`
+
+## Quick Install (all prerequisites)
+
+If you want to install all system prerequisites (pandoc, uv, Python packages) in one command:
+
+```bash
+curl -sSL https://raw.githubusercontent.com/fabricesemti80/markdowny/main/install.sh | bash
+```
 
 ## Install
 
 From this repository root:
 
 ```bash
-uv tool install --native-tls .
+uv tool install --native-tls --python 3.12 .
 ```
+
+Note: Python 3.12 is required for PDF support (xhtml2pdf dependency).
 
 If `mdy` is not found after install, your tools bin directory is not on `PATH`.
 
