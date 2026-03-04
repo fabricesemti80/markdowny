@@ -28,8 +28,10 @@ if command -v apt-get &> /dev/null; then
     sudo apt-get install -y libcairo2-dev pkg-config
 fi
 
-if [[ -f "${BASH_SOURCE[0]}" ]] && [[ -d "$(dirname "${BASH_SOURCE[0]}")" ]] && [[ "$(dirname "${BASH_SOURCE[0]}")" != "." ]]; then
-    cd "$(dirname "${BASH_SOURCE[0]}")"
+if [[ -f "pyproject.toml" ]]; then
+    echo "Installing from local directory..."
+elif [[ -t 0 ]]; then
+    cd "$(dirname "$0")"
 else
     echo "Downloading markdowny..."
     INSTALL_DIR=$(mktemp -d)
