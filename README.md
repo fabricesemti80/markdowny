@@ -20,7 +20,7 @@
 If you want to install all system prerequisites (pandoc, uv, Python packages) in one command:
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/anomalyco/markdowny/main/install.sh | bash
+curl -sSL https://raw.githubusercontent.com/fabricesemti80/markdowny/main/install.sh | bash
 ```
 
 ## Install
