@@ -24,4 +24,3 @@ pdf-fallback = [
 mdy = "convert:main"
 
 [tool.setuptools]
-py-modules = ["convert"]
