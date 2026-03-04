@@ -28,6 +28,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
+      - name: Install system dependencies
+        run: sudo apt-get install -y libcairo2-dev pkg-config
+      
       - uses: astral-sh/setup-uv@v4
         with:
           enable-cache: true
@@ -36,6 +39,3 @@ jobs:
       
       - name: Check Ruff
         run: uv run ruff check .
-      
-      - name: Check types
-        run: uv run ruff check --select=FA --show-source . || uv run mypy . || echo "No type checking configured"
