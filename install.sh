@@ -28,7 +28,14 @@ if command -v apt-get &> /dev/null; then
     sudo apt-get install -y libcairo2-dev pkg-config
 fi
 
-cd "$(dirname "$0")"
+if [[ -f "${BASH_SOURCE[0]}" ]] && [[ -d "$(dirname "${BASH_SOURCE[0]}")" ]] && [[ "$(dirname "${BASH_SOURCE[0]}")" != "." ]]; then
+    cd "$(dirname "${BASH_SOURCE[0]}")"
+else
+    echo "Downloading markdowny..."
+    INSTALL_DIR=$(mktemp -d)
+    curl -sSL https://github.com/fabricesemti80/markdowny/archive/refs/heads/main.tar.gz | tar xz -C "$INSTALL_DIR"
+    cd "$INSTALL_DIR/markdowny-main"
+fi
 
 echo "Installing Python 3.12 (required for PDF support)..."
 uv python install 3.12
