@@ -19,6 +19,9 @@ dependencies = [
 pdf-fallback = [
     "xhtml2pdf",
 ]
+lint = [
+    "ruff",
+]
 
 [project.scripts]
 mdy = "convert:main"
