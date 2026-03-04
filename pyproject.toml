@@ -12,6 +12,7 @@ dependencies = [
     "pypandoc",
     "requests",
     "pillow",
+    "xhtml2pdf",
 ]
 
 [project.optional-dependencies]

@@ -334,11 +334,46 @@ def render_mermaid_blocks(content, temp_dir):
     return content
 
 
+def _ensure_pandoc_available():
+    """Ensure that a pandoc binary is accessible.
+
+    pypandoc normally requires an external pandoc installation. When the
+    converter runs inside a fresh environment (such as via ``uv tool install``)
+    the binary may not yet be present. If pandoc cannot be found we trigger
+    ``pypandoc.download_pandoc()`` which grabs a self-contained copy into
+    ``~/.pypandoc`` and updates the internal path so subsequent calls work.
+
+    This makes ``uv tool install`` effectively boot‑strap pandoc for the user
+    without requiring a separate system package. The feature is opt‑out when a
+    real pandoc already exists in ``PATH`` (preferred for production workloads).
+    """
+    try:
+        # ``get_pandoc_version`` will raise ``OSError`` if no binary is found.
+        pypandoc.get_pandoc_version()
+    except OSError as exc:
+        log_warn("Pandoc not found in PATH; attempting to download via pypandoc...")
+        try:
+            pypandoc.download_pandoc()
+            # After downloading, pypandoc will update its internal path; verify.
+            version = pypandoc.get_pandoc_version()
+            log_info(f"Successfully downloaded pandoc {version}.")
+        except Exception as dl_err:
+            log_error(
+                "Automatic pandoc download failed. "
+                "Please install pandoc manually and ensure it is on your PATH."
+            )
+            # re‑raise to keep original behaviour (exit with failure)
+            raise
+
+
 def convert_md_to_output(input_file, output_file, output_format):
     """
     Converts a Markdown file to DOCX or PDF using pypandoc.
     output_format should be 'docx' or 'pdf'.
     """
+    # make sure pandoc exists or download a bundled copy; see _ensure_pandoc_available
+    _ensure_pandoc_available()
+
     if not os.path.exists(input_file):
         log_error(f"Input file '{input_file}' not found.")
         sys.exit(1)

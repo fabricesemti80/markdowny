@@ -50,3 +50,6 @@ make clean
 
 - `FORMAT` is used by the Make target for Markdown input (`docx` or `pdf`).
 - If `OUTPUT` is omitted, `mdy` infers a default output path.
+- The CLI will attempt to download a bundled pandoc on first use if it's not
+  already installed; running `uv tool install` today therefore no longer
+  requires you to separately install pandoc for basic functionality.
