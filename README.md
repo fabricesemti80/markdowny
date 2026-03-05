@@ -17,18 +17,32 @@
 
 ## Quick Install (all prerequisites)
 
-If you want to install all system prerequisites (pandoc, uv, Python packages) in one command:
+### Linux / macOS
 
 ```bash
 curl -sSL https://raw.githubusercontent.com/fabricesemti80/markdowny/main/install.sh | bash
+```
+
+### Windows (PowerShell)
+
+```powershell
+irm https://raw.githubusercontent.com/fabricesemti80/markdowny/main/install.ps1 | iex
 ```
 
 ## Uninstall
 
 To remove `mdy` (leaves pandoc, uv, and system libs intact):
 
+### Linux / macOS
+
 ```bash
 curl -sSL https://raw.githubusercontent.com/fabricesemti80/markdowny/main/uninstall.sh | bash
+```
+
+### Windows (PowerShell)
+
+```powershell
+irm https://raw.githubusercontent.com/fabricesemti80/markdowny/main/uninstall.ps1 | iex
 ```
 
 ## Install

@@ -36,7 +36,25 @@ class _Style:
     RED = "\033[31m"
 
 
-USE_COLOR = sys.stdout.isatty() and os.getenv("NO_COLOR") is None
+def _init_color():
+    """Determine whether to emit ANSI colours and, on Windows, enable VT100 mode."""
+    if os.getenv("NO_COLOR") is not None or not sys.stdout.isatty():
+        return False
+    if sys.platform == "win32":
+        try:
+            import ctypes
+            kernel32 = ctypes.windll.kernel32
+            # STD_OUTPUT_HANDLE = -11, ENABLE_VIRTUAL_TERMINAL_PROCESSING = 0x0004
+            handle = kernel32.GetStdHandle(-11)
+            mode = ctypes.c_ulong()
+            kernel32.GetConsoleMode(handle, ctypes.byref(mode))
+            kernel32.SetConsoleMode(handle, mode.value | 0x0004)
+        except Exception:
+            return False
+    return True
+
+
+USE_COLOR = _init_color()
 
 
 def _paint(text, *styles):
