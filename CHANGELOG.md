@@ -9,13 +9,19 @@ All notable changes to this project will be documented in this file.
 - `--verbose` flag for detailed logging output
 - Output path prompt in interactive mode with default suggestion
 - Clean progress indicators for non‑verbose mode (docker‑compose style)
+- Ruff linting integration
+- `docker-run.sh` wrapper script for easy Docker execution
+- Mermaid rendering via `https://mermaid.ink` service
 
 ### Changed
 - Improved non‑verbose output with visually appealing progress indicators
-- README updated with visual decorations and Docker section
+- README rewritten with emoji, better structure, and clearer documentation
+- Makefile updated to use proper CLI flags (`-i`/`-o`)
+- DEVNOTES.md expanded with linting instructions and clearer examples
 
 ### Fixed
 - Python version requirement corrected to 3.10+ in documentation
+- Makefile convert target now uses correct CLI syntax
 
 ## [0.2.0] - 2025-03-05
 

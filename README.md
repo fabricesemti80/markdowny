@@ -1,27 +1,30 @@
-# ═══════════════════════════════════════════════════
-                    Markdowny CLI
-# ═══════════════════════════════════════════════════
+# Markdowny CLI 🤖
 
-`mdy` converts:
+Markdowny (`mdy`) is a CLI for converting technical documentation between Markdown, DOCX, and PDF while handling Mermaid diagrams.
 
-  • Markdown → DOCX
-  • Markdown → PDF
-  • DOCX  → Markdown
+## What It Does ✨
 
-════════════════════════════════════════════════════
+`mdy` supports:
 
-## Requirements
+- Markdown -> DOCX
+- Markdown -> PDF
+- DOCX -> Markdown
+- Mermaid code blocks in Markdown are rendered to PNG images during Markdown output conversion.
 
-  • `uv` — Python package manager
-  • **Pandoc** — the CLI will auto‑download a copy via `pypandoc` if a system
-    binary isn't found, but for best performance and file size you can install
-    Pandoc yourself and put it on your `PATH`.
-  • For PDF output: `libcairo2-dev` and `pkg-config` (Linux) or equivalent
-  • Optional for better long Mermaid handling in DOCX: `pillow`
+## Prerequisites 🧰
 
-════════════════════════════════════════════════════
+- Python 3.10+ (Python 3.12 is recommended for PDF support and matches the install scripts)
+- `uv` package manager
+- Pandoc
+  - If Pandoc is not in `PATH`, `mdy` attempts to download it automatically via `pypandoc`.
+- For Linux PDF support, system libraries such as `libcairo2-dev` and `pkg-config` are recommended.
+- Optional: `Pillow` for splitting very tall Mermaid diagrams into multiple images.
+- Network access requirement for Mermaid:
+  - `mdy` renders Mermaid via `https://mermaid.ink`.
+  - Outbound HTTPS access to `mermaid.ink` is required for Mermaid diagram rendering.
+  - If unreachable, conversion continues and Mermaid code blocks are kept as-is.
 
-## Quick Install (all prerequisites)
+## Quick Install 🚀
 
 ### Linux / macOS
 
@@ -35,11 +38,73 @@ curl -sSL https://raw.githubusercontent.com/fabricesemti80/markdowny/main/instal
 irm https://raw.githubusercontent.com/fabricesemti80/markdowny/main/install.ps1 | iex
 ```
 
-════════════════════════════════════════════════════
+## Local Install (From Repo) 📦
 
-## Uninstall
+From the repository root:
 
-To remove `mdy` (leaves pandoc, uv, and system libs intact):
+```bash
+uv tool install --native-tls --python 3.12 .
+```
+
+If `mdy` is not found after install, add your `uv` tools bin directory to `PATH`.
+
+No-PATH fallback:
+
+```bash
+uv tool run mdy --help
+```
+
+## Usage 🛠️
+
+Show help:
+
+```bash
+mdy --help
+```
+
+Markdown -> PDF:
+
+```bash
+mdy -i path/to/file.md --pdf
+```
+
+Markdown -> DOCX:
+
+```bash
+mdy -i path/to/file.md --docx
+```
+
+DOCX -> Markdown:
+
+```bash
+mdy -i path/to/file.docx
+```
+
+Specify output path:
+
+```bash
+mdy -i path/to/file.md -o out.pdf --pdf
+```
+
+Verbose mode:
+
+```bash
+mdy -i path/to/file.md --pdf --verbose
+```
+
+Version:
+
+```bash
+mdy --version
+```
+
+Behavior notes:
+
+- If Markdown input is provided without `--format` / `--pdf` / `--docx`, `mdy` prompts for output format (default: `docx`).
+- If `-o/--out` is omitted, `mdy` prompts for output path and suggests a default.
+- For DOCX -> Markdown, extracted images are written to a `media/` folder next to the output Markdown file.
+
+## Uninstall 🧹
 
 ### Linux / macOS
 
@@ -53,114 +118,6 @@ curl -sSL https://raw.githubusercontent.com/fabricesemti80/markdowny/main/uninst
 irm https://raw.githubusercontent.com/fabricesemti80/markdowny/main/uninstall.ps1 | iex
 ```
 
-════════════════════════════════════════════════════
+## Development Notes 🧪
 
-## Install
-
-From this repository root:
-
-```bash
-uv tool install --native-tls --python 3.10 .
-```
-
-Note: Python 3.10+ is required.
-
-If `mdy` is not found after install, your tools bin directory is not on `PATH`.
-
-PowerShell (current session):
-
-```powershell
-$env:PATH = "C:\Users\<your-user>\.local\bin;$env:PATH"
-mdy --help
-```
-
-Permanent shell setup:
-
-```powershell
-uv tool update-shell
-```
-
-Then restart your terminal.
-
-No‑PATH fallback:
-
-```bash
-uv tool run mdy --help
-```
-
-════════════════════════════════════════════════════
-
-## Docker (Linux)
-
-If you prefer not to manage dependencies, use Docker:
-
-### Build
-
-```bash
-docker build -t mdy .
-```
-
-### Run
-
-From the directory containing your files:
-
-```bash
-docker run --rm -v $(pwd):/data -w /data mdy -i input.md -o output.docx
-```
-
-Or use the wrapper script:
-
-```bash
-./docker-run.sh -i input.md -o output.docx
-./docker-run.sh -i input.md -o output.pdf -f pdf
-```
-
-════════════════════════════════════════════════════
-
-## Usage
-
-Show help:
-
-```bash
-mdy --help
-```
-
-Markdown → PDF:
-
-```bash
-mdy path/to/file.md --pdf
-```
-
-Markdown → DOCX:
-
-```bash
-mdy path/to/file.md --docx
-```
-
-DOCX → Markdown:
-
-```bash
-mdy path/to/file.docx
-```
-
-Specify output path:
-
-```bash
-mdy path/to/file.md out.pdf --pdf
-```
-
-If output path is omitted, `mdy` auto‑generates one based on the input filename.
-
-Verbose mode (detailed logs):
-
-```bash
-mdy path/to/file.md --verbose
-```
-
-════════════════════════════════════════════════════
-
-## Developer Notes
-
-Development workflows (`make`, `uv sync`, `uv run`, local testing) are in `DEVNOTES.md`.
-
-════════════════════════════════════════════════════
+Development workflows (`make`, `uv sync`, `uv run`, local testing) are documented in `DEVNOTES.md`.

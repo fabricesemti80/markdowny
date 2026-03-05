@@ -1,20 +1,29 @@
 # Developer Notes
 
-This file contains development workflows that are intentionally kept out of `README.md`.
+This file contains development workflows intentionally kept out of `README.md`.
 
 ## Local Setup
 
-1. Sync project environment from lockfile:
+1. Sync the project environment from lockfile:
 
 ```bash
 uv sync --native-tls
 ```
 
-2. Run CLI from project environment:
+2. Run the CLI from the project environment:
 
 ```bash
 uv run --no-sync mdy --help
-uv run --no-sync mdy test.md --pdf
+uv run --no-sync mdy -i test.md --pdf
+```
+
+## Lint
+
+Run Ruff locally:
+
+```bash
+uv sync --extra lint
+uv run --no-sync ruff check .
 ```
 
 ## Make Targets
@@ -31,25 +40,46 @@ Initialize dependencies:
 make init
 ```
 
-Convert examples:
-
-```bash
-make convert INPUT=doc.md
-make convert INPUT=doc.md FORMAT=pdf
-make convert INPUT=doc.docx
-make convert INPUT=doc.md OUTPUT=out.docx
-```
-
 Clean virtual environment directory:
 
 ```bash
 make clean
 ```
 
+Note on `make convert`:
+
+- The current `make convert` target still uses legacy positional CLI arguments.
+- The current CLI expects `-i/--in` and `-o/--out` flags.
+- Prefer direct `uv run` commands until the target is updated.
+
+## Useful Conversion Commands
+
+Markdown -> DOCX:
+
+```bash
+uv run --no-sync mdy -i doc.md --docx
+```
+
+Markdown -> PDF:
+
+```bash
+uv run --no-sync mdy -i doc.md --pdf
+```
+
+DOCX -> Markdown:
+
+```bash
+uv run --no-sync mdy -i doc.docx
+```
+
+Custom output path:
+
+```bash
+uv run --no-sync mdy -i doc.md -o out.pdf --pdf
+```
+
 ## Notes
 
-- `FORMAT` is used by the Make target for Markdown input (`docx` or `pdf`).
-- If `OUTPUT` is omitted, `mdy` infers a default output path.
-- The CLI will attempt to download a bundled pandoc on first use if it's not
-  already installed; running `uv tool install` today therefore no longer
-  requires you to separately install pandoc for basic functionality.
+- `mdy` attempts to download a bundled Pandoc on first use if Pandoc is not in `PATH`.
+- Mermaid rendering requires outbound HTTPS access to `https://mermaid.ink`.
+- CI currently runs on Ubuntu and Windows, and linting is performed with Ruff.
