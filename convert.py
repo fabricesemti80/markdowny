@@ -1,4 +1,4 @@
-# Import necessary tools (libraries) to help us do the work
+__version__ = "0.2.0"
 import argparse  # Helps us read commands from the terminal
 import sys  # Helps us interact with the computer system (like exiting the program)
 import os  # Helps us work with files and folders
@@ -43,6 +43,7 @@ def _init_color():
     if sys.platform == "win32":
         try:
             import ctypes
+
             kernel32 = ctypes.windll.kernel32
             # STD_OUTPUT_HANDLE = -11, ENABLE_VIRTUAL_TERMINAL_PROCESSING = 0x0004
             handle = kernel32.GetStdHandle(-11)
@@ -632,9 +633,17 @@ def main():
         description="Convert between Markdown, DOCX, and PDF (auto-detects direction)."
     )
     parser.add_argument(
-        "input_file", nargs="?", help="Path to the input file (.md or .docx)."
+        "-i",
+        "--in",
+        dest="input_file",
+        help="Path to the input file (.md or .docx).",
     )
-    parser.add_argument("output_file", nargs="?", help="Path to the output file.")
+    parser.add_argument(
+        "-o",
+        "--out",
+        dest="output_file",
+        help="Path to the output file.",
+    )
     parser.add_argument(
         "-f",
         "--format",
@@ -651,6 +660,12 @@ def main():
         "--docx",
         action="store_true",
         help="Shortcut for '--format docx' when converting from Markdown.",
+    )
+    parser.add_argument(
+        "-v",
+        "--version",
+        action="version",
+        version=f"%(prog)s {__version__}",
     )
 
     args = parser.parse_args()
