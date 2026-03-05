@@ -8,7 +8,6 @@ Set Width 900
 Set Height 600
 Set Theme "rose-pine-moon"
 Set Padding 10
-Set Env "PATH" "/root/.local/share/uv/tools:/root/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 
 # Show help
 Type "mdy --help"
