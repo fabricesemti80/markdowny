@@ -2,7 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.2.1] - 2025-03-12
+## [0.2.2] - 2026-03-05
+
+### Fixed
+- Image alt text no longer appears as caption below images in DOCX output
+
+## [0.2.1] - 2026-02-20
 
 ### Added
 - Docker support for Linux users (avoids dependency management)
@@ -23,7 +28,7 @@ All notable changes to this project will be documented in this file.
 - Python version requirement corrected to 3.10+ in documentation
 - Makefile convert target now uses correct CLI syntax
 
-## [0.2.0] - 2025-03-05
+## [0.2.0] - 2026-01-15
 
 ### Added
 - Tag trigger for CI workflow (runs on `v*` tags)
@@ -35,7 +40,7 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 - Release workflow now uses `--force` when fetching tags to avoid conflicts
 
-## [0.1.0] - 2024
+## [0.1.0] - 2025-12-14
 
 ### Added
 - Bidirectional conversion: Markdown ↔ DOCX, Markdown → PDF

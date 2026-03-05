@@ -21,8 +21,15 @@ try:
 except Exception:
     pisa = None
 
-# Suppress SSL warnings when verify=False (common in corporate proxy environments)
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+# Set MDY_INSECURE_TLS=1 to opt in to disabling SSL verification (e.g. corporate proxy).
+# Default is secure (verify=True). Warnings are suppressed only when explicitly opted in.
+_INSECURE_TLS = os.getenv("MDY_INSECURE_TLS") == "1"
+if _INSECURE_TLS:
+    urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+_MAX_MERMAID_DIAGRAM_BYTES = (
+    4096  # 4 KB — generous for diagram syntax, safe for URL encoding
+)
 
 
 class _Style:
@@ -145,7 +152,20 @@ def _make_xhtml2pdf_link_callback(search_paths):
         for base in [rel_hint, *normalized_search_paths]:
             if not base:
                 continue
-            candidate = os.path.abspath(os.path.join(base, raw))
+            base_abs = os.path.abspath(base)
+            base_dir = (
+                base_abs if os.path.isdir(base_abs) else os.path.dirname(base_abs)
+            )
+            if not base_dir:
+                continue
+            candidate = os.path.abspath(os.path.join(base_dir, raw))
+            # Prevent path traversal: resolved path must stay within the base directory.
+            try:
+                common = os.path.commonpath([candidate, base_dir])
+            except ValueError:
+                continue  # Different drives on Windows — skip.
+            if common != base_dir:
+                continue
             if os.path.exists(candidate):
                 return candidate
 
@@ -301,7 +321,8 @@ def strip_yaml_front_matter(text):
         flags=re.DOTALL,
     )
     if result == text:
-        log_warn("No YAML front matter detected to strip.")
+        if VERBOSE:
+            log_step("No YAML front matter detected; nothing to strip.")
     else:
         log_info("YAML front matter was stripped before conversion.")
     return result
@@ -360,6 +381,13 @@ def render_mermaid_blocks(content, temp_dir):
         diagram_num = len(matches) - i + 1
         image_path = os.path.join(diagrams_dir, f"mermaid_{diagram_num}.png")
 
+        if len(diagram_code.encode("utf-8")) > _MAX_MERMAID_DIAGRAM_BYTES:
+            log_warn(
+                f"Diagram {diagram_num} exceeds {_MAX_MERMAID_DIAGRAM_BYTES} bytes; "
+                "skipping mermaid.ink render (block kept as-is)."
+            )
+            continue
+
         try:
             # Encode the Mermaid code as base64 for the Mermaid Ink URL
             encoded = base64.urlsafe_b64encode(diagram_code.encode("utf-8")).decode(
@@ -367,7 +395,7 @@ def render_mermaid_blocks(content, temp_dir):
             )
             url = f"https://mermaid.ink/img/{encoded}"
 
-            response = requests.get(url, timeout=30, verify=False)
+            response = requests.get(url, timeout=30, verify=not _INSECURE_TLS)
             response.raise_for_status()
 
             with open(image_path, "wb") as f:
@@ -482,6 +510,7 @@ def convert_md_to_output(input_file, output_file, output_format):
             content = f.read()
         content = strip_yaml_front_matter(content)
         content = re.sub(r"^---\s*$", "***", content, flags=re.MULTILINE)
+        content = re.sub(r"!\[([^\]]*)\]\(([^)]+)\)", r"![](\2)", content)
 
         # Use a local temp directory for Mermaid images and Pandoc output
         # to avoid issues with UNC paths, spaces, and file locks.
