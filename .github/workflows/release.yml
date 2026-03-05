@@ -102,10 +102,22 @@ jobs:
       - name: Install mdy
         run: uv tool install --python 3.12 .
 
+      - name: Install VHS dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+          curl -fsSL https://github.com/tsl0922/ttyd/releases/download/1.7.7/ttyd.x86_64 -o /usr/local/bin/ttyd
+          chmod +x /usr/local/bin/ttyd
+
+      - name: Install VHS
+        run: |
+          go install github.com/charmbracelet/vhs@latest
+        env:
+          GOPATH: /home/runner/go
+          PATH: /home/runner/go/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
       - name: Generate demo GIF
-        uses: charmbracelet/vhs-action@v2
-        with:
-          path: demo/demo.tape
+        run: /home/runner/go/bin/vhs demo/demo.tape
 
       - name: Commit demo GIF
         run: |
