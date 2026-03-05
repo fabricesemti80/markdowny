@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.3] - 2026-03-05
+
+### Added
+- Demo GIF added to README.md showcasing tool usage
+
 ## [0.2.2] - 2026-03-05
 
 ### Fixed
