@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.1] - 2025-03-12
+
+### Added
+- Docker support for Linux users (avoids dependency management)
+- `--verbose` flag for detailed logging output
+- Output path prompt in interactive mode with default suggestion
+- Clean progress indicators for non‑verbose mode (docker‑compose style)
+
+### Changed
+- Improved non‑verbose output with visually appealing progress indicators
+- README updated with visual decorations and Docker section
+
+### Fixed
+- Python version requirement corrected to 3.10+ in documentation
+
 ## [0.2.0] - 2025-03-05
 
 ### Added
