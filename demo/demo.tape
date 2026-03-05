@@ -8,6 +8,7 @@ Set Width 900
 Set Height 600
 Set Theme "rose-pine-moon"
 Set Padding 10
+Set Env "PATH" "/root/.local/share/uv/tools:/root/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 
 # Show help
 Type "mdy --help"
@@ -15,8 +16,11 @@ Enter
 Sleep 1s
 
 # Clear screen
-Ctrl+L
+Hide
+Type "clear"
+Enter
 Sleep 500ms
+Show
 
 # Convert to PDF
 Type "mdy -i demo/demo.md --pdf"
@@ -24,8 +28,11 @@ Enter
 Sleep 2s
 
 # Clear screen
-Ctrl+L
+Hide
+Type "clear"
+Enter
 Sleep 500ms
+Show
 
 # Convert to DOCX
 Type "mdy -i demo/demo.md --docx"
