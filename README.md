@@ -1,5 +1,11 @@
 # Markdowny CLI 🤖
 
+<p align="center">
+  <img src="demo.gif" alt="Markdowny Demo" width="600">
+  <br>
+  <em>Demo: Converting Markdown to PDF / DOCX with Mermaid diagrams</em>
+</p>
+
 Markdowny (`mdy`) is a CLI for converting technical documentation between Markdown, DOCX, and PDF while handling Mermaid diagrams.
 
 ## What It Does ✨
