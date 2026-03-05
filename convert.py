@@ -56,6 +56,7 @@ def _init_color():
 
 
 USE_COLOR = _init_color()
+VERBOSE = False
 
 
 def _paint(text, *styles):
@@ -65,23 +66,44 @@ def _paint(text, *styles):
 
 
 def log_info(message):
-    print(f"{_paint('[INFO]', _Style.CYAN, _Style.BOLD)} {message}")
+    if not USE_COLOR:
+        print(message)
+    else:
+        print(f"{_paint('[INFO]', _Style.CYAN, _Style.BOLD)} {message}")
 
 
 def log_warn(message):
-    print(f"{_paint('[WARN]', _Style.YELLOW, _Style.BOLD)} {message}")
+    if not USE_COLOR:
+        print(f"WARNING: {message}")
+    else:
+        print(f"{_paint('[WARN]', _Style.YELLOW, _Style.BOLD)} {message}")
 
 
 def log_error(message):
-    print(f"{_paint('[ERROR]', _Style.RED, _Style.BOLD)} {message}")
+    if not USE_COLOR:
+        print(f"ERROR: {message}")
+    else:
+        print(f"{_paint('[ERROR]', _Style.RED, _Style.BOLD)} {message}")
 
 
 def log_success(message):
-    print(f"{_paint('[OK]', _Style.GREEN, _Style.BOLD)} {message}")
+    if VERBOSE:
+        if not USE_COLOR:
+            print(message)
+        else:
+            print(f"{_paint('[OK]', _Style.GREEN, _Style.BOLD)} {message}")
+    else:
+        print(f"{_paint('✓', _Style.GREEN, _Style.BOLD)} {message}")
 
 
 def log_step(message):
-    print(f"{_paint('>>', _Style.BLUE, _Style.BOLD)} {message}")
+    if VERBOSE:
+        if not USE_COLOR:
+            print(f">> {message}")
+        else:
+            print(f"{_paint('>>', _Style.BLUE, _Style.BOLD)} {message}")
+    else:
+        print(f"{_paint('>', _Style.CYAN, _Style.BOLD)} {message}")
 
 
 def _is_windows_drive_path(path_value):
@@ -628,6 +650,28 @@ def choose_output_format(default_format="docx"):
     return selected
 
 
+def choose_output_path(default_output):
+    """
+    Prompts for output path confirmation when in interactive mode.
+    Returns the output path (either default or user-provided).
+    Falls back to default_output on empty input, Ctrl+C, or EOF.
+    """
+    prompt = f"Output file (default: {default_output}): "
+    try:
+        selected = input(prompt).strip()
+    except KeyboardInterrupt:
+        print()
+        log_warn("Operation cancelled.")
+        sys.exit(0)
+    except EOFError:
+        log_warn(f"No interactive input available; using default '{default_output}'.")
+        return default_output
+
+    if not selected:
+        return default_output
+    return selected
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Convert between Markdown, DOCX, and PDF (auto-detects direction)."
@@ -667,8 +711,16 @@ def main():
         action="version",
         version=f"%(prog)s {__version__}",
     )
+    parser.add_argument(
+        "--verbose",
+        action="store_true",
+        help="Enable verbose output with detailed logs.",
+    )
 
     args = parser.parse_args()
+
+    global VERBOSE
+    VERBOSE = args.verbose
 
     input_file = args.input_file
     output_file = args.output_file
@@ -713,10 +765,11 @@ def main():
         direction_label = f"Markdown -> {output_format.upper()}"
     log_step(f"Detected conversion: {direction_label}")
 
-    # Use inferred output path by default to keep CLI usage non-interactive.
+    # Prompt for output path if not provided via CLI
     if not output_file:
-        output_file = default_output
-        log_info(f"No output path provided; using '{output_file}'.")
+        output_file = choose_output_path(default_output)
+        if output_file != default_output:
+            log_info(f"Using output path: {output_file}")
 
     # Run the appropriate conversion
     if direction == "docx2md":
