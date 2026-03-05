@@ -23,6 +23,14 @@ If you want to install all system prerequisites (pandoc, uv, Python packages) in
 curl -sSL https://raw.githubusercontent.com/fabricesemti80/markdowny/main/install.sh | bash
 ```
 
+## Uninstall
+
+To remove `mdy` (leaves pandoc, uv, and system libs intact):
+
+```bash
+curl -sSL https://raw.githubusercontent.com/fabricesemti80/markdowny/main/uninstall.sh | bash
+```
+
 ## Install
 
 From this repository root:

@@ -27,3 +27,4 @@ lint = [
 mdy = "convert:main"
 
 [tool.setuptools]
+py-modules = ["convert"]
