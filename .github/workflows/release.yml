@@ -67,7 +67,7 @@ jobs:
       - name: Get latest tag
         id: tag
         run: |
-          git fetch --tags
+          git fetch --tags --force
           TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
           if [ -z "$TAG" ]; then
             echo "No tags found. Push a tag (e.g., v0.1.0) to trigger release."
