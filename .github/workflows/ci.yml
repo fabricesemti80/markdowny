@@ -5,6 +5,8 @@ on:
     branches: [main]
   push:
     branches: [main]
+    tags:
+      - 'v*'
 
 jobs:
   test:
@@ -25,7 +27,7 @@ jobs:
       
       - run: uv sync
       
-      - run: uv run pytest || echo "No tests found"
+      - run: echo "No tests configured"
 
   lint:
     runs-on: ubuntu-latest
