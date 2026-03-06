@@ -2,10 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+<<<<<<< HEAD
 ## [1.0.0] - 2026-03-06
 
 ### Added
 - Major version bump to 1.0.0 - ready for production use!
+=======
+## [0.2.3] - 2026-03-05
+
+### Added
+- Demo GIF added to README.md showcasing tool usage
+>>>>>>> d21d0061c62b089cddd9ebac93fb1c9e278ba4f7
 
 ## [0.2.2] - 2026-03-05
 

@@ -15,19 +15,25 @@ Enter
 Sleep 1s
 
 # Clear screen
-Ctrl+L
+Hide
+Type "clear"
+Enter
 Sleep 500ms
+Show
 
 # Convert to PDF
-Type "mdy -i demo/demo.md --pdf"
+Type "mdy -i demo/demo.md -o demo/demo.pdf --pdf"
 Enter
 Sleep 2s
 
 # Clear screen
-Ctrl+L
+Hide
+Type "clear"
+Enter
 Sleep 500ms
+Show
 
 # Convert to DOCX
-Type "mdy -i demo/demo.md --docx"
+Type "mdy -i demo/demo.md -o demo/demo.docx --docx"
 Enter
 Sleep 2s

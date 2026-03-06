@@ -83,3 +83,49 @@ jobs:
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  demo:
+    needs: release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install system dependencies
+        run: sudo apt-get install -y libcairo2-dev pkg-config
+
+      - uses: astral-sh/setup-uv@v4
+        with:
+          enable-cache: true
+
+      - name: Install mdy
+        run: uv tool install --python 3.12 .
+
+      - name: Install VHS dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+          curl -fsSL https://github.com/tsl0922/ttyd/releases/download/1.7.7/ttyd.x86_64 -o /usr/local/bin/ttyd
+          chmod +x /usr/local/bin/ttyd
+
+      - name: Install VHS
+        run: |
+          go install github.com/charmbracelet/vhs@latest
+        env:
+          GOPATH: /home/runner/go
+          PATH: /home/runner/go/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+      - name: Generate demo GIF
+        run: /home/runner/go/bin/vhs demo/demo.tape
+
+      - name: Commit demo GIF
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add demo.gif
+          git diff --cached --quiet && echo "No changes" && exit 0
+          git commit -m "chore: update demo GIF [skip ci]"
+          git push origin HEAD:main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

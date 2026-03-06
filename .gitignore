@@ -27,12 +27,5 @@ Thumbs.db
 Desktop.ini
 .DS_Store
 
-# Conversion output
-demo/demo.docx
-demo/demo.pdf
-mermaid_diagrams/
-*.docx
-*.pdf
-
 # Local curiosity notebook
 notebooks/curiosity_md_to_docx_pdf.ipynb
