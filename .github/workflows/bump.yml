@@ -45,8 +45,9 @@ jobs:
           echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
           
           sed -i "s/^version = \".*\"/version = \"$MAJOR.$MINOR.$PATCH\"/" pyproject.toml
-          
-          git add pyproject.toml
+          sed -i "s/^__version__ = \".*\"/__version__ = \"$MAJOR.$MINOR.$PATCH\"/" convert.py
+
+          git add pyproject.toml convert.py
           git commit -m "Bump version to $NEW_VERSION"
           git tag "$NEW_VERSION"
           git push origin main --tags
