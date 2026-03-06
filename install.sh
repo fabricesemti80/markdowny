@@ -28,15 +28,15 @@ if command -v apt-get &> /dev/null; then
     sudo apt-get install -y libcairo2-dev pkg-config
 fi
 
-if [[ -f "pyproject.toml" ]]; then
-    echo "Installing from local directory..."
-elif [[ -t 0 ]]; then
-    cd "$(dirname "$0")"
-else
-    echo "Downloading markdowny..."
+if [[ ! -t 0 ]]; then
+    echo "Downloading latest markdowny..."
     INSTALL_DIR=$(mktemp -d)
     curl -sSL https://github.com/fabricesemti80/markdowny/archive/refs/heads/main.tar.gz | tar xz -C "$INSTALL_DIR"
     cd "$INSTALL_DIR/markdowny-main"
+elif [[ -f "pyproject.toml" ]]; then
+    echo "Installing from local directory..."
+else
+    cd "$(dirname "$0")"
 fi
 
 echo "Installing Python 3.12 (required for PDF support)..."
