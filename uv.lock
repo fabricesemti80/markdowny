@@ -435,7 +435,7 @@ wheels = [
 
 [[package]]
 name = "md-converter"
-version = "0.2.0"
+version = "1.0.0"
 source = { editable = "." }
 dependencies = [
     { name = "pillow" },
