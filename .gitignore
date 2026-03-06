@@ -19,6 +19,9 @@ build/
 *.swo
 *~
 
+# Articles and drafts
+articles/
+
 # OS files
 Thumbs.db
 Desktop.ini

@@ -1,4 +1,4 @@
-__version__ = "0.2.0"
+__version__ = "1.0.0"
 import argparse  # Helps us read commands from the terminal
 import sys  # Helps us interact with the computer system (like exiting the program)
 import os  # Helps us work with files and folders

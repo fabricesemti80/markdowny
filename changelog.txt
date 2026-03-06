@@ -1,5 +1,8 @@
 CHANGELOG
 
+2026-03-06
+- Version 1.0.0 release - ready for production use!
+
 2025-12-16
 - Initial project build for Markdown/DOCX conversion workflow and Make-based execution.
 
