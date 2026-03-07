@@ -20,7 +20,7 @@ convert:
 		echo "INPUT is required. Example: make convert INPUT=doc.md [FORMAT=pdf] [OUTPUT=out.pdf]"; \
 		exit 1; \
 	fi
-	@$(UV) run --no-sync mdy -i "$(INPUT)" $(if $(OUTPUT),-o "$(OUTPUT)",) $(if $(FORMAT),-f $(FORMAT),)
+	@$(UV) run --no-sync dfx -i "$(INPUT)" $(if $(OUTPUT),-o "$(OUTPUT)",) $(if $(FORMAT),-f $(FORMAT),)
 
 clean:
 	@$(UV) run --no-sync python -c "import shutil; shutil.rmtree('.venv', ignore_errors=True)"

@@ -10,7 +10,7 @@ Set Theme "rose-pine-moon"
 Set Padding 10
 
 # Show help
-Type "mdy --help"
+Type "dfx --help"
 Enter
 Sleep 1s
 
@@ -22,7 +22,7 @@ Sleep 500ms
 Show
 
 # Convert to PDF
-Type "mdy -i demo/demo.md -o demo/demo.pdf --pdf"
+Type "dfx -i demo/demo.md -o demo/demo.pdf --pdf"
 Enter
 Sleep 2s
 
@@ -34,6 +34,6 @@ Sleep 500ms
 Show
 
 # Convert to DOCX
-Type "mdy -i demo/demo.md -o demo/demo.docx --docx"
+Type "dfx -i demo/demo.md -o demo/demo.docx --docx"
 Enter
 Sleep 2s

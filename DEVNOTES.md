@@ -13,8 +13,8 @@ uv sync --native-tls
 2. Run the CLI from the project environment:
 
 ```bash
-uv run --no-sync mdy --help
-uv run --no-sync mdy -i test.md --pdf
+uv run --no-sync dfx --help
+uv run --no-sync dfx -i test.md --pdf
 ```
 
 ## Lint
@@ -57,29 +57,29 @@ Note on `make convert`:
 Markdown -> DOCX:
 
 ```bash
-uv run --no-sync mdy -i doc.md --docx
+uv run --no-sync dfx -i doc.md --docx
 ```
 
 Markdown -> PDF:
 
 ```bash
-uv run --no-sync mdy -i doc.md --pdf
+uv run --no-sync dfx -i doc.md --pdf
 ```
 
 DOCX -> Markdown:
 
 ```bash
-uv run --no-sync mdy -i doc.docx
+uv run --no-sync dfx -i doc.docx
 ```
 
 Custom output path:
 
 ```bash
-uv run --no-sync mdy -i doc.md -o out.pdf --pdf
+uv run --no-sync dfx -i doc.md -o out.pdf --pdf
 ```
 
 ## Notes
 
-- `mdy` attempts to download a bundled Pandoc on first use if Pandoc is not in `PATH`.
+- `dfx` attempts to download a bundled Pandoc on first use if Pandoc is not in `PATH`.
 - Mermaid rendering requires outbound HTTPS access to `https://mermaid.ink`.
 - CI currently runs on Ubuntu and Windows, and linting is performed with Ruff.

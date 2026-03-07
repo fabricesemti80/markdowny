@@ -99,7 +99,7 @@ jobs:
         with:
           enable-cache: true
 
-      - name: Install mdy
+      - name: Install dfx
         run: uv tool install --python 3.12 .
 
       - name: Install VHS dependencies

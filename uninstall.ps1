@@ -1,6 +1,6 @@
 $ErrorActionPreference = 'Stop'
 
-Write-Host "Uninstalling markdowny (mdy)..."
+Write-Host "Uninstalling docflux (dfx)..."
 
 if (-not (Get-Command uv -ErrorAction SilentlyContinue)) {
     Write-Host "uv not found – nothing to uninstall."
@@ -10,9 +10,9 @@ if (-not (Get-Command uv -ErrorAction SilentlyContinue)) {
 $toolList = uv tool list 2>$null
 if ($toolList -match "md-converter") {
     uv tool uninstall md-converter
-    Write-Host "Removed mdy tool."
+    Write-Host "Removed dfx tool."
 } else {
-    Write-Host "mdy is not currently installed via uv."
+    Write-Host "dfx is not currently installed via uv."
 }
 
 Write-Host ""

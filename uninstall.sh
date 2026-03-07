@@ -2,7 +2,7 @@
 
 set -e
 
-echo "Uninstalling markdowny (mdy)..."
+echo "Uninstalling docflux (dfx)..."
 
 if ! command -v uv &> /dev/null; then
     echo "uv not found – nothing to uninstall."
@@ -11,9 +11,9 @@ fi
 
 if uv tool list 2>/dev/null | grep -q "md-converter"; then
     uv tool uninstall md-converter
-    echo "Removed mdy tool."
+    echo "Removed dfx tool."
 else
-    echo "mdy is not currently installed via uv."
+    echo "dfx is not currently installed via uv."
 fi
 
 echo ""

@@ -1,6 +1,6 @@
 $ErrorActionPreference = 'Stop'
 
-Write-Host "Installing prerequisites for markdowny..." -ForegroundColor Cyan
+Write-Host "Installing prerequisites for docflux..." -ForegroundColor Cyan
 
 # Check for pandoc
 if (-not (Get-Command pandoc -ErrorAction SilentlyContinue)) {
@@ -26,22 +26,22 @@ if (-not (Get-Command uv -ErrorAction SilentlyContinue)) {
 if (Test-Path "pyproject.toml") {
     Write-Host "Installing from local directory..." -ForegroundColor Cyan
 } else {
-    Write-Host "Downloading markdowny..." -ForegroundColor Yellow
-    $installDir = Join-Path $env:TEMP "markdowny-install"
+    Write-Host "Downloading docflux..." -ForegroundColor Yellow
+    $installDir = Join-Path $env:TEMP "docflux-install"
     if (Test-Path $installDir) { Remove-Item $installDir -Recurse -Force }
     New-Item -ItemType Directory -Path $installDir | Out-Null
 
-    $zipPath = Join-Path $installDir "markdowny.zip"
-    Invoke-WebRequest -Uri "https://github.com/fabricesemti80/markdowny/archive/refs/heads/main.zip" -OutFile $zipPath
+    $zipPath = Join-Path $installDir "docflux.zip"
+    Invoke-WebRequest -Uri "https://github.com/fabricesemti80/docflux/archive/refs/heads/main.zip" -OutFile $zipPath
     Expand-Archive -Path $zipPath -DestinationPath $installDir -Force
-    Set-Location (Join-Path $installDir "markdowny-main")
+    Set-Location (Join-Path $installDir "docflux-main")
 }
 
 Write-Host "Installing Python 3.12 (required for PDF support)..." -ForegroundColor Cyan
 uv python install 3.12
 
-Write-Host "Installing markdowny with PDF support..." -ForegroundColor Cyan
+Write-Host "Installing docflux with PDF support..." -ForegroundColor Cyan
 uv tool install --native-tls --python 3.12 .
 
 Write-Host ""
-Write-Host "Done! You can now run: mdy <input.md> [output]" -ForegroundColor Green
+Write-Host "Done! You can now run: dfx <input.md> [output]" -ForegroundColor Green

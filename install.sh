@@ -2,7 +2,7 @@
 
 set -e
 
-echo "Installing prerequisites for markdowny..."
+echo "Installing prerequisites for docflux..."
 
 if ! command -v pandoc &> /dev/null; then
     echo "Installing pandoc..."
@@ -29,10 +29,10 @@ if command -v apt-get &> /dev/null; then
 fi
 
 if [[ -z "${BASH_SOURCE[0]}" || "${BASH_SOURCE[0]}" == "bash" ]]; then
-    echo "Downloading latest markdowny..."
+    echo "Downloading latest docflux..."
     INSTALL_DIR=$(mktemp -d)
-    curl -sSL https://github.com/fabricesemti80/markdowny/archive/refs/heads/main.tar.gz | tar xz -C "$INSTALL_DIR"
-    cd "$INSTALL_DIR/markdowny-main"
+    curl -sSL https://github.com/fabricesemti80/docflux/archive/refs/heads/main.tar.gz | tar xz -C "$INSTALL_DIR"
+    cd "$INSTALL_DIR/docflux-main"
 elif [[ -f "pyproject.toml" ]]; then
     echo "Installing from local directory..."
 else
@@ -42,7 +42,7 @@ fi
 echo "Installing Python 3.12 (required for PDF support)..."
 uv python install 3.12
 
-echo "Installing markdowny with PDF support..."
+echo "Installing docflux with PDF support..."
 uv tool install --native-tls --python 3.12 .
 
-echo "Done! You can now run: mdy <input.md> [output]"
+echo "Done! You can now run: dfx <input.md> [output]"

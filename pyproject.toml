@@ -24,7 +24,7 @@ lint = [
 ]
 
 [project.scripts]
-mdy = "convert:main"
+dfx = "convert:main"
 
 [tool.setuptools]
 py-modules = ["convert"]

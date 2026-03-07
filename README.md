@@ -1,16 +1,20 @@
 # Markdowny CLI 🤖
 
+> **⚠️ ARCHIVED & RENAMED**: This project has been renamed to **Docflux** (`dfx`).
+> Please use the new repository: [github.com/fabricesemti80/docflux](https://github.com/fabricesemti80/docflux)
+> This repository is archived and no longer maintained.
+
 <p align="center">
   <img src="demo.gif" alt="Markdowny Demo" width="600">
   <br>
   <em>Demo: Converting Markdown to PDF / DOCX with Mermaid diagrams</em>
 </p>
 
-Markdowny (`mdy`) is a CLI for converting technical documentation between Markdown, DOCX, and PDF while handling Mermaid diagrams.
+Docflux (`dfx`) is a CLI for converting technical documentation between Markdown, DOCX, and PDF while handling Mermaid diagrams.
 
 ## What It Does ✨
 
-`mdy` supports:
+`dfx` supports:
 
 - Markdown -> DOCX
 - Markdown -> PDF
@@ -22,11 +26,11 @@ Markdowny (`mdy`) is a CLI for converting technical documentation between Markdo
 - Python 3.10+ (Python 3.12 is recommended for PDF support and matches the install scripts)
 - `uv` package manager
 - Pandoc
-  - If Pandoc is not in `PATH`, `mdy` attempts to download it automatically via `pypandoc`.
+  - If Pandoc is not in `PATH`, `dfx` attempts to download it automatically via `pypandoc`.
 - For Linux PDF support, system libraries such as `libcairo2-dev` and `pkg-config` are recommended.
 - Optional: `Pillow` for splitting very tall Mermaid diagrams into multiple images.
 - Network access requirement for Mermaid:
-  - `mdy` renders Mermaid via `https://mermaid.ink`.
+  - `dfx` renders Mermaid via `https://mermaid.ink`.
   - Outbound HTTPS access to `mermaid.ink` is required for Mermaid diagram rendering.
   - If unreachable, conversion continues and Mermaid code blocks are kept as-is.
 
@@ -52,12 +56,12 @@ From the repository root:
 uv tool install --native-tls --python 3.12 .
 ```
 
-If `mdy` is not found after install, add your `uv` tools bin directory to `PATH`.
+If `dfx` is not found after install, add your `uv` tools bin directory to `PATH`.
 
 No-PATH fallback:
 
 ```bash
-uv tool run mdy --help
+uv tool run dfx --help
 ```
 
 ## Usage 🛠️
@@ -65,49 +69,49 @@ uv tool run mdy --help
 Show help:
 
 ```bash
-mdy --help
+dfx --help
 ```
 
 Markdown -> PDF:
 
 ```bash
-mdy -i path/to/file.md --pdf
+dfx -i path/to/file.md --pdf
 ```
 
 Markdown -> DOCX:
 
 ```bash
-mdy -i path/to/file.md --docx
+dfx -i path/to/file.md --docx
 ```
 
 DOCX -> Markdown:
 
 ```bash
-mdy -i path/to/file.docx
+dfx -i path/to/file.docx
 ```
 
 Specify output path:
 
 ```bash
-mdy -i path/to/file.md -o out.pdf --pdf
+dfx -i path/to/file.md -o out.pdf --pdf
 ```
 
 Verbose mode:
 
 ```bash
-mdy -i path/to/file.md --pdf --verbose
+dfx -i path/to/file.md --pdf --verbose
 ```
 
 Version:
 
 ```bash
-mdy --version
+dfx --version
 ```
 
 Behavior notes:
 
-- If Markdown input is provided without `--format` / `--pdf` / `--docx`, `mdy` prompts for output format (default: `docx`).
-- If `-o/--out` is omitted, `mdy` prompts for output path and suggests a default.
+- If Markdown input is provided without `--format` / `--pdf` / `--docx`, `dfx` prompts for output format (default: `docx`).
+- If `-o/--out` is omitted, `dfx` prompts for output path and suggests a default.
 - For DOCX -> Markdown, extracted images are written to a `media/` folder next to the output Markdown file.
 
 ## Uninstall 🧹
